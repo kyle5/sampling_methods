@@ -1,0 +1,33 @@
+// this method will adjust a set of optimal indices
+// Inputs: mat of size indices, the actual optimal indices, number of adjusted indices to make, distance to alter indices by, percentage of indices to alter
+// Outputs: Cell array of Cell array of optimal indices
+
+#include "mex_conversion_matlab_and_cpp"
+
+void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
+	// read a matrix of the size of the field
+	Mat algorithm_counts = convertMatlabMatToOpenCVMat(prhs[0], true);
+	vector<Mat>  = convertMatlabCellArrayOfMatricesToCPPvectorOfMats( prhs[1] );
+	double num_adjusted_indices_double = read_double_value( prhs[2] );
+	int num_adjusted_indices = (int) round( num_adjusted_indices_double );
+	
+	double distance_to_alter_indices_double = read_double_value( prhs[3] );
+	int distance_to_alter_indices = (int) round( distance_to_alter_indices_double );
+	
+	double percentage_of_indices_to_alter_double = read_double_value( prhs[4] );
+	int percentage_of_indices_to_alter = (int) round( percentage_of_indices_to_alter_double );
+	
+	vector< vector< vector< int > > > vector_of_vector_of_vectors( num_adjusted_indices );
+	// read a cell array of matrices containing the original optimal indices
+	// for i in cell array:
+	for ( int i = 0; i < ; i++ ) {
+		cell_index_mat_value = getCell...
+		Mat original_optimal_indices = convertMatlabMatToOpenCVMat( cell_index_mat_value, true);
+		// return a		 vector< vector< int > > of the adjusted indices
+		all_optimal_indices[i] = create_adjusted_indices( original_optimal_indices );
+	} //
+
+	// convert the resulting vector of mats to a cell array of mats
+	all_optimal_indices
+	mxArray* cell_array_ptr = setup_mxArray_cell_array_of_matrices_from_vector_of_matrices( all_optimal_indices );
+}

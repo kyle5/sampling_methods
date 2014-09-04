@@ -1,0 +1,65 @@
+function [ all_computer_mean_errors ] = getMeanErrorsComputerCount( pc_counts, ground_counts,...
+    actually_counted, total_pc_count)
+    
+    global loop_iterations;
+    global percentages_to_check;
+    
+    total_rows = size(ground_counts, 1);
+    sections_per_row = size(ground_counts, 2);
+    
+    total_sections = total_rows*sections_per_row;
+    
+    total_percentages = size(percentages_to_check, 2);
+    all_computer_mean_errors = ones(total_percentages, total_sections);
+    
+    for k = 1:total_percentages
+        % The Computer count is setup to be a percentage of the
+        % total orchard sections (100, 50, 25, or 10 percent of all sections)
+        cur_percentage = percentages_to_check(k);
+        ratio_computer_count_to_total_sections = cur_percentage/100;
+        num_sections_for_computer_to_count = floor(ratio_computer_count_to_total_sections * total_sections);
+
+        computer_mean_errors_one_percentage = ones(1, total_sections);
+        
+        for num_sections = 1:total_sections
+            %For each number of sections we find the mean error of the
+            %computer count by comparing against the actual count
+            
+            computer_count_errors_cur_num_sections = ones(1, loop_iterations);
+            for i = 1:loop_iterations
+                [ sample_count_pc, sample_count_hand ] = getRandomSamples( ground_counts, pc_counts, num_sections );
+                
+                % This is the scaling factor between the hand 
+                % and computer counts in the
+                % sampled sections
+                ratioPcToGroundCount = sample_count_pc/sample_count_hand;
+                
+                if cur_percentage == 100
+                    pc_count = total_pc_count;
+                else
+                    pc_count = randomSectionCountComputer(pc_counts, num_sections_for_computer_to_count);
+                end
+                
+                % Divide by the ratio between apples counted by the computer
+                % and apples counted by hand to get true estimate of apples
+                % in the sections soley computer counted
+                estimated_apples_sections_computer_counted = pc_count/ratioPcToGroundCount;
+                
+                % After we have the estimated apples for a percentage of
+                % the sections in the orchard,
+                % we can divide by the ratio of sections counted 
+                % to the total number of sections in the orchard 
+		% to get an estimate for the count of the
+                % entire orchard
+                estimated_apples_orchard =  estimated_apples_sections_computer_counted / ratio_computer_count_to_total_sections;
+                
+                cur_error = (estimated_apples_orchard - actually_counted)/actually_counted;
+                cur_error_absolute_value = abs(cur_error);
+                computer_count_errors_cur_num_sections(1, i) = cur_error_absolute_value;
+            end
+            mean_error_cur_num_sections = mean(computer_count_errors_cur_num_sections);
+            computer_mean_errors_one_percentage(1, num_sections) = mean_error_cur_num_sections;
+        end
+        all_computer_mean_errors(k, :) = computer_mean_errors_one_percentage;
+    end
+end

@@ -1,0 +1,163 @@
+clc
+close all
+
+load redAppleVariables.mat
+load greenAppleVariables.mat
+
+
+% These are the percentages of the orchard that are sampled by the computer
+
+global percentages_to_check
+percentages_to_check = [ 100, 50, 25, 10 ];
+
+%% Flags
+
+% Set types of apple data you would like to see to 1
+flag_red_thinned = 1;
+flag_red_not_thinned = 1;
+flag_red_overall = 1;
+flag_green = 1;
+
+global plot_hand_error;
+global plot_computer_error;
+global plot_hand_computer_count_error_comparison;
+global plot_percent_improvement_hand_to_computer_count;
+
+% Show errors from hand counting with different portions of the orchard
+% hand counted
+plot_hand_error = 1;
+
+% Show errors from computer counting with different portions of the orchard
+% hand counted
+plot_computer_error = 1;
+
+% Show hand to computer count errors side by side for comparison
+plot_hand_computer_count_error_comparison = 1;
+
+% Show the percent improvement from hand counting to computer counting at
+% different levels of hand counting
+plot_percent_improvement_hand_to_computer_count = 1;
+
+% There are stored error values in the /data/ folder.
+% To recompute the error values, set these flags to 1
+
+calculate_error_computer = 0;
+calculate_error_hand = 0;
+
+global loop_iterations;
+
+% Number of times that random samples are taken from the orchard sections
+
+% If calculate_error flags are 1, then:
+    % 100 Takes 20 seconds to recompute
+    % 1000 Takes about 2 minutes
+    % 10000 Takes about 8 minutes
+    % 100000 Takes about an hour and a half ...
+    
+loop_iterations = 10000;
+
+loop_iterations_string = num2str(loop_iterations);
+
+comp_error_directory_string = 'data/allComputerErrors/';
+hand_error_directory_string = 'data/allHandErrors/';
+
+%% Red Thinned
+
+if flag_red_thinned == 1
+    mat_file_name_computer = [comp_error_directory_string, 'all_computer_mean_errors_red_thinned_', loop_iterations_string , '.mat'];
+    mat_file_name_hand = [hand_error_directory_string, 'all_hand_mean_errors_red_thinned_', loop_iterations_string , '.mat'];
+    
+    if calculate_error_computer == 1
+        
+        %Get errors for computer counts
+        all_computer_mean_errors_red_thinned = getMeanErrorsComputerCount(red_thinned_pc_counts, red_thinned_ground_counts,...
+            total_hand_count_red_thinned, total_computer_count_red_thinned);
+        save(mat_file_name_computer, 'all_computer_mean_errors_red_thinned');
+    else
+        load(mat_file_name_computer);
+    end
+    if calculate_error_hand == 1
+        %Get the errors for hand counts
+        all_hand_mean_errors_red_thinned = getMeanErrorsHandCount(red_thinned_ground_counts, total_hand_count_red_thinned);
+        save(mat_file_name_hand, 'all_hand_mean_errors_red_thinned');
+    else
+        load(mat_file_name_hand);
+    end
+    plotAllAppleCountErrorGraphs(all_hand_mean_errors_red_thinned, all_computer_mean_errors_red_thinned, percentages_to_check, 'Red Thinned');    
+end
+
+%% Red Not Thinned
+
+if flag_red_not_thinned == 1
+    mat_file_name_computer = [comp_error_directory_string, 'all_computer_mean_errors_red_not_thinned_', loop_iterations_string , '.mat'];
+    mat_file_name_hand = [hand_error_directory_string, 'all_hand_mean_errors_red_not_thinned_', loop_iterations_string , '.mat'];
+    
+    
+    if calculate_error_computer == 1 
+        all_computer_mean_errors_red_not_thinned = getMeanErrorsComputerCount(red_not_thinned_pc_counts,...
+            red_not_thinned_ground_counts, total_hand_count_red_not_thinned, total_computer_count_red_not_thinned);
+        
+        save(mat_file_name_computer, 'all_computer_mean_errors_red_not_thinned');
+    else
+        load(mat_file_name_computer);
+    end
+    if calculate_error_hand == 1
+        all_hand_mean_errors_red_not_thinned = getMeanErrorsHandCount(red_not_thinned_ground_counts, total_hand_count_red_not_thinned);
+        save(mat_file_name_hand, 'all_hand_mean_errors_red_not_thinned');
+    else
+        load(mat_file_name_hand);
+    end
+    plotAllAppleCountErrorGraphs(all_hand_mean_errors_red_not_thinned, all_computer_mean_errors_red_not_thinned, percentages_to_check, 'Red Not Thinned');
+end
+
+%% Red Overall
+if flag_red_overall == 1
+    mat_file_name_computer = [comp_error_directory_string, 'all_computer_mean_errors_red_', loop_iterations_string , '.mat'];
+    mat_file_name_hand = [hand_error_directory_string, 'all_hand_mean_errors_red_', loop_iterations_string , '.mat'];
+    
+    red_ground_counts = [red_thinned_ground_counts; red_not_thinned_ground_counts] ;
+    red_pc_counts = [red_thinned_pc_counts; red_not_thinned_pc_counts];
+    
+    total_red_hand_count = total_hand_count_red_not_thinned + total_hand_count_red_thinned;
+    total_computer_count_red = total_computer_count_red_not_thinned + total_computer_count_red_thinned;
+        
+    
+    if calculate_error_computer == 1
+        
+        %Get errors for computer counts
+        all_computer_mean_errors_red = getMeanErrorsComputerCount(red_pc_counts, red_ground_counts,...
+            total_red_hand_count, total_computer_count_red);
+        save(mat_file_name_computer, 'all_computer_mean_errors_red');
+    else
+        load(mat_file_name_computer);
+    end
+    if calculate_error_hand == 1
+        %Get the errors for hand counts
+        all_hand_mean_errors_red = getMeanErrorsHandCount(red_ground_counts, total_red_hand_count);
+        save(mat_file_name_hand, 'all_hand_mean_errors_red');
+    else
+        load(mat_file_name_hand);
+    end
+    plotAllAppleCountErrorGraphs(all_hand_mean_errors_red, all_computer_mean_errors_red, percentages_to_check, 'Red');    
+end
+
+%% Green
+if flag_green == 1
+    mat_file_name_computer = [comp_error_directory_string, 'all_computer_mean_errors_green_', loop_iterations_string , '.mat'];
+    mat_file_name_hand = [hand_error_directory_string, 'all_hand_mean_errors_green_', loop_iterations_string , '.mat'];
+    
+    if calculate_error_computer == 1
+        all_computer_mean_errors_green = getMeanErrorsComputerCount(green_pc_counts, green_ground_counts,...
+            total_hand_count_green, total_computer_count_green);
+        save(mat_file_name_computer, 'all_computer_mean_errors_green');
+    else
+        load(mat_file_name_computer);
+    end
+    if calculate_error_hand == 1
+        all_hand_mean_errors_green = getMeanErrorsHandCount(green_ground_counts, total_hand_count_green);
+        save(mat_file_name_hand, 'all_hand_mean_errors_green');
+    else
+        load(mat_file_name_hand)
+    end
+    plotAllAppleCountErrorGraphs(all_hand_mean_errors_green, all_computer_mean_errors_green, percentages_to_check, 'Green');
+end

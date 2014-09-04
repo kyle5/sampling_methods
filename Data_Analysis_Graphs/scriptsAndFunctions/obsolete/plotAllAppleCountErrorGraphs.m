@@ -1,0 +1,24 @@
+function [ ] = plotAllAppleCountErrorGraphs( all_hand_mean_errors, all_computer_mean_errors, percentages_to_check, type_of_apple )
+
+    global plot_hand_error;
+    global plot_computer_error;
+    global plot_hand_computer_count_error_comparison;
+    global plot_percent_improvement_hand_to_computer_count;
+
+    
+    if plot_hand_error == 1
+        plotHandCountError(all_hand_mean_errors, type_of_apple);
+    end
+    
+    if plot_computer_error == 1
+        plotComputerError( all_computer_mean_errors, type_of_apple, percentages_to_check);
+    end
+    
+    if plot_hand_computer_count_error_comparison == 1
+        plotComparisonHandAndComputerCount(all_hand_mean_errors, all_computer_mean_errors, percentages_to_check, type_of_apple);
+    end
+    
+    if plot_percent_improvement_hand_to_computer_count
+        plotPercentImprovement(all_hand_mean_errors, all_computer_mean_errors, percentages_to_check, type_of_apple);
+    end
+end

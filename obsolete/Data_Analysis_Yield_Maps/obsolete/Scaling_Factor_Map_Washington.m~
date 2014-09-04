@@ -1,0 +1,6 @@
+clc;
+close all;
+
+load redAppleVariables.mat
+load greenAppleVariables.mat
+

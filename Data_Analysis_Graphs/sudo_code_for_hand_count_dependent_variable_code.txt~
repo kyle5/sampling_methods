@@ -1,0 +1,25 @@
+// sudo code for the new process
+
+Notes:
+Organize the data by which variable is dependent
+	
+
+setup the variables needed beforehand
+	setup the number of:
+		algorithm count indices
+		ground count indices
+	cell arrays for each type
+	
+	loops are always connected with ground or algorithm counts
+		data is computed the same way
+		the indices to save data to vary
+
+	adjustment of indices could either occur for alg or hand counts
+		C code to do this would be straight forward
+			would take a day to write
+
+	error value calculation would be the same
+
+	save data to indices specified
+		there should be an efficient way to accomplish this
+			reshaping the matrix

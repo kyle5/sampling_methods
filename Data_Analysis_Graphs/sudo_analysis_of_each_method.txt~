@@ -1,0 +1,29 @@
+Could organize the data as a cell array -> Convert back to MATLAB in the end
+
+Could have another section to compute extra random sections
+	to handle algorithm and scaling section overlap
+
+The 6 approaches:
+Unscaled/Scaled/Stratified/Spatial:
+	Have random indices assigned to a local variable
+	Have scaling factor assigned to a local variable
+Kriging:
+	Have random indices
+	Get all of the other possible indices
+Standard Deviation:
+	(
+	Get algorithm counts
+		Get the sections that are optimal for scaling factor
+		Compute scaling factor
+	)
+	Still just a scaling factor and indices should be setup with the other 4
+
+
+Setting up indices:
+	Current:
+	
+	unscaled/scaled/stratified choose random indices
+		unscaled/scaled:
+			Just uses the random sections that are initial chosen
+		stratified:
+			

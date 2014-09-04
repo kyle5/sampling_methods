@@ -1,0 +1,46 @@
+function [  ] = plotPercentImprovement( hand_mean_errors, all_computer_mean_errors, percentages, type_of_apple)    
+    
+    total_sections = numel( hand_mean_errors);
+    all_sections = linspace(1,100, total_sections);
+    
+    number_of_percentages = size(percentages, 2);
+    
+    all_percent_improvement = [];
+    for j = 1:number_of_percentages
+        percent_improvement = [];
+        computer_mean_errors_one_percentage = all_computer_mean_errors(j,:);
+        for num_sections = 1:total_sections
+            cur_hand_error = hand_mean_errors(num_sections);
+            cur_computer_error = computer_mean_errors_one_percentage(num_sections);
+            cur_percent_improvement = 100 * ( cur_hand_error - cur_computer_error ) / cur_hand_error;
+            percent_improvement = [percent_improvement, cur_percent_improvement];
+        end
+        all_percent_improvement = [all_percent_improvement; percent_improvement];
+    end
+    title_one = [type_of_apple, ': Percentage Improvement : Hand to Computer Aided Counting'];
+    figure('Name', title_one);
+    
+    hold all
+    
+    for i = 1:number_of_percentages
+        plot(all_sections, all_percent_improvement(i,:));
+    end
+    
+    title(title_one)
+    xlabel('Percentage of Total Sections Hand Counted to Calculate Scaling Factor', 'fontsize',12,'fontweight','normal');    
+    ylabel( 'Improvement from Hand to Computer Counting (Percent)', 'fontsize',12,'fontweight','normal');
+    
+    cell_array_titles = cell(1, number_of_percentages);
+    
+    for i = 1:number_of_percentages
+        cur_percentage = percentages(i);
+        cur_string = [num2str(cur_percentage) ' Percent Computer Counted'];
+        cell_array_titles{1, i} = cur_string;
+    end
+
+    hleg = legend(cell_array_titles);
+    set(hleg, 'String', cell_array_titles);
+    
+    axis([0 100 0 100]);
+    hold off
+end

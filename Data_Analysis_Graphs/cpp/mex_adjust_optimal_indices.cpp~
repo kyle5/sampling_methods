@@ -1,0 +1,63 @@
+// this method will adjust a set of optimal indices
+// Inputs: mat of size indices, the actual optimal indices, number of adjusted indices to make, distance to alter indices by, percentage of indices to alter
+// Outputs: Cell array of Cell array of optimal indices
+#include <cstdio>
+#include <stdexcept>
+
+#include "mex_conversion_matlab_and_cpp.h"
+#include "create_adjusted_indices.h"
+#include "convertMatlabMatToOpenCVMat.h"
+
+using namespace cv;
+using namespace std;
+
+void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
+	fprintf( stderr, "mex_adjust_optimal_indices\n");
+	// read a matrix of the size of the field
+	Mat mat_of_size_field_data = convertMatlabMatToOpenCVMat(prhs[0], true);
+	fprintf( stderr, "CPP aaaa\n");
+	vector<Mat> vector_of_mats_of_optimal_indices = convertMatlabCellArrayOfMatricesToCPPvectorOfMats( prhs[1] );
+	vector_of_mats_of_optimal_indices_cpp = vector_of_mats_of_optimal_indices;
+	for ( int i = 0; i < (int) vector_of_mats_of_optimal_indices.size(); i++ ) {
+		for ( int j = 0; j < (int) mat_of_size_field_data.rows; j++ ) {
+			for ( int k = 0; k < (int) mat_of_size_field_data.cols; k++ ) {
+				vector_of_mats_of_optimal_indices_cpp[i].at<double>(j, k) = vector_of_mats_of_optimal_indices[i].at<double>(j, k) - 1;
+			}
+		}
+	}
+	fprintf( stderr, "CPP aaab\n");
+	double num_adjusted_indices_double = read_double_value( prhs[2] );
+	int num_adjusted_indices = (int) round( num_adjusted_indices_double );
+	fprintf( stderr, "CPP aaac\n");
+	
+	double distance_to_alter_indices = read_double_value( prhs[3] );
+	fprintf( stderr, "CPP aaad\n");
+	double percentage_of_indices_to_alter = read_double_value( prhs[4] );
+	fprintf( stderr, "CPP Read all input variables\n");
+	
+	vector< vector< vector< int > > > all_optimal_indices( (int) vector_of_mats_of_optimal_indices_cpp.size() );
+	// read a cell array of matrices containing the original optimal indices
+	// for i in cell array:
+	for ( int i = 0; i < (int) vector_of_mats_of_optimal_indices_cpp.size(); i++ ) {
+		// this mat will be organized with the indices in the 1st/y dimension
+		Mat original_optimal_indices = vector_of_mats_of_optimal_indices_cpp[i];
+		// return a		 vector< vector< int > > of the adjusted indices
+		all_optimal_indices[i] = create_adjusted_indices( mat_of_size_field_data, original_optimal_indices, num_adjusted_indices, distance_to_alter_indices, percentage_of_indices_to_alter, i );
+	} //
+	
+	fprintf( stderr, "CPP Before returning variables\n");
+
+	// convert the CPP indices to MATLAB indices	
+	// vector< vector< vector< int > > >;
+	for ( int i = 0; i < (int) all_optimal_indices.size(); i++ ) {
+		for ( int j = 0; j < (int) all_optimal_indices[i].size(); j++ ) {
+			for ( int k = 0; k < (int) all_optimal_indices[i][j].size(); k++ ) {
+				all_optimal_indices[i][j][k] = all_optimal_indices[i][j][k] + 1;
+			}
+		}
+	}
+
+	mxArray* cell_array_ptr = setup_mxArray_cell_array_of_matrices_from_vector_of_matrices( all_optimal_indices );
+	plhs[0] = cell_array_ptr;
+	fprintf( stderr, "CPP After return variables are set up?\n");
+}

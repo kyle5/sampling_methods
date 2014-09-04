@@ -1,0 +1,201 @@
+ % This script shows different types of yield map plots
+ % Maps are shown for:
+    % Hand Counts
+    % Algorithm Counts
+    % Error Values
+    % Scaling Factors
+    
+ close all
+ clear all
+ clc
+ 
+ directory_of_all_data_analysis = '/home/kyle/Dropbox/PastWorkProjects/2014_05_allDataAnalysis/';
+ 
+ directory_of_helper_functions = [ directory_of_all_data_analysis, 'DataAnalysisHelperFunctions/'];
+ directory_for_yield_maps = [directory_of_all_data_analysis, 'Data_Analysis_Yield_Maps/'];
+ 
+ % This directory contains the .mat files containing the matrices of apples that 
+ % were counted by hand and by the computer algorithm
+ directory_for_apple_count_matrices = [directory_of_all_data_analysis, 'OrchardBlockHandAndAlgorithmCounts/'];
+ 
+ addpath(directory_of_helper_functions);
+ addpath(directory_for_apple_count_matrices);
+ 
+ cd(directory_for_yield_maps);
+ 
+ addpath(pwd);
+ rmpath([pwd, '/obsolete']);
+
+ load redAppleVariables.mat
+ load greenAppleVariables.mat
+
+ global percentages;
+ percentages = [100, 50, 25, 10];
+ 
+ % This determines how much the image increases in size for kriging
+ % Note: A larger image is smoother after kriging
+ global scaling_factor_image;
+ scaling_factor_image = 10;
+ 
+ % These flags determine the types of figures that are displayed
+ % The first flag shows the complete hand counts along with varying
+    % percentages of computer counts sampled
+ % The second flag shows varying percentages of hand counts sampled
+ % The third flag shows the complete computer counts along with
+    % the complete hand counts
+ plot_varying_percentages_hand_counted = 1;
+ plot_varying_percentages_computer_counted = 0;
+ plot_varying_percentages_computer_counted_scaled = 1;
+ plot_one_hundred_percent_computer_and_hand_counted = 0;
+
+ 
+ plot_scaling_factor_map = 0;
+ plot_error_map = 1;
+ 
+ % We did not use the not fruit thinned sections of the red apple data, so just set red counts to red
+ % thinned counts
+ red_ground_counts = red_thinned_ground_counts;
+ red_pc_counts = red_thinned_pc_counts;
+
+ number_of_trees_per_section = 3;
+ 
+ apple_types = {'Red Delicious : Thinned'; 'Granny Smith'};
+ types_of_apples = size(apple_types, 1);
+ 
+ % Enter 1 to scale apples counted by the algorithm for visibility
+ scaled_types = [1, 1];
+ 
+ % Allows for the visualization of apple yield maps of hand and algorithm counts taken
+ % continuously.
+ Continuous_sample = 0;
+ 
+ % These are pre-made variables that are loaded. This is where additional
+ % variables will need to be added to do additional data processing.
+ % *ground_counts and *pc_counts have the diminsions of :
+ % size() = [number of sections per row, number of rows in the block]
+ % Section 1, Row 1 is located in the top left at index (1, 1)
+ apple_types_ground_counts = { red_ground_counts; green_ground_counts };
+ apple_types_pc_counts = { red_pc_counts; green_pc_counts };
+ 
+ % Signifies if the type of apple should be analyzed 
+boolean_analyze_apple_type = [1; 1];
+
+for i = 1:size( boolean_analyze_apple_type, 1 )
+     
+     cur_boolean = boolean_analyze_apple_type( i, 1 );
+     if cur_boolean == 0
+         continue;
+     end
+     
+     cur_apple_type = apple_types{i, 1};
+     
+     PngDirectory = makeDirectory({ 'PNGs', cur_apple_type });
+     
+     pc_image_used = apple_types_pc_counts{i, 1};
+     hand_image_used = apple_types_ground_counts{i, 1};
+     
+     [pc_counted_rows, pc_counted_columns] = size(pc_image_used);
+     [hand_counted_rows, hand_counted_columns] = size(hand_image_used);
+     
+     if pc_counted_rows == hand_counted_rows
+        rows_cur_map = pc_counted_rows;
+     else
+        error('Number of rows in computer map not equal to number of rows in hand count map');
+     end
+     if pc_counted_columns == hand_counted_columns
+        columns_cur_map = pc_counted_columns;
+     else
+        error('Number of columns in computer map not equal to number of columns in hand count map');
+     end
+     
+     % This gets all the x and y values in the map that will be obtained after kriging 
+     [ X, Y ] = getAllXAndYValuesInExpandedImage( columns_cur_map, rows_cur_map, scaling_factor_image );
+     total_sections = rows_cur_map * columns_cur_map;
+     
+     % If there is supposed to be calibration for the visibility of the
+     % apples, then find a calibration factor
+     if scaled_types(i) == 1
+         percent_to_evaluate_scaling = 25;
+         percentage_to_evaluate_scaling = percent_to_evaluate_scaling / 100;
+         number_of_sections_scaling = floor( total_sections * percentage_to_evaluate_scaling);
+         rand_sections_scaling_map = randomlySelectDiscontinuousSections( total_sections,  number_of_sections_scaling );
+         hand_count_for_scaling = addSpecifiedMatrixValues(hand_image_used, rand_sections_scaling_map);
+         pc_count_for_scaling = addSpecifiedMatrixValues(pc_image_used, rand_sections_scaling_map);
+         
+         scaling_factor_computer_to_hand_count = pc_count_for_scaling/hand_count_for_scaling;
+     else
+         scaling_factor_computer_to_hand_count = 1;
+     end
+     
+     num_percentages = numel(percentages);
+     
+     % Loop through each percentage and do kriging on the known values to
+     % interpolate the unknown values. Interpolated kriging values are stored in the z_value
+     % cell arrays
+     computer_kriging_z_values = cell(num_percentages);
+     computer_kriging_z_values_scaled = cell(num_percentages);
+     hand_kriging_z_values = cell(num_percentages);
+     for j = 1:num_percentages
+        percentage_to_evaluate = percentages(j) / 100;
+        number_of_sections_to_count_cur_percentage = floor( total_sections * percentage_to_evaluate);
+        
+        if Continuous_sample == 1
+            rand_sections_to_count = randomlySelectContinuousSections( number_of_sections_to_count_cur_percentage, group_size, total_sections, rows_cur_map );        
+        else
+            rand_sections_to_count = randomlySelectDiscontinuousSections( total_sections, number_of_sections_to_count_cur_percentage );
+        end
+        
+        [ cur_computer_kriging_z_values ] = getKrigingValues( pc_image_used, rand_sections_to_count, X, Y, scaling_factor_image );
+        [ cur_hand_kriging_z_values ] = getKrigingValues( hand_image_used, rand_sections_to_count, X, Y, scaling_factor_image );
+        
+        cur_computer_kriging_z_values_scaled = cur_computer_kriging_z_values./scaling_factor_computer_to_hand_count;
+        
+        computer_kriging_z_values{j} = cur_computer_kriging_z_values;
+        computer_kriging_z_values_scaled{j} = cur_computer_kriging_z_values_scaled;
+        hand_kriging_z_values{j} = cur_hand_kriging_z_values;
+    end
+
+    original_size_of_image = [ rows_cur_map, columns_cur_map ];
+
+    % This sets up the max range of the color map.
+    max_hand_count = max( hand_image_used(:) );
+    max_computer_count = max( pc_image_used(:) );
+    scale_color_bar_per_section = max( max_computer_count, max_hand_count ) * 1.1;
+    
+    % Setup scalebar by apples per tree instead of per section
+    scale_color_bar_per_tree = scale_color_bar_per_section / number_of_trees_per_section;
+    
+    % Displays yield maps of hand counts that have undergone kriging
+    if plot_varying_percentages_hand_counted == 1
+        plotVaryingPercentagesHandCounted( original_size_of_image, cur_apple_type, ...
+            hand_kriging_z_values, percentages, scale_color_bar_per_tree, scaling_factor_image );
+    end
+    % Displays yield maps of computer counts that have undergone kriging
+    if plot_varying_percentages_computer_counted == 1
+        plotVaryingPercentagesComputerCounted( original_size_of_image, cur_apple_type, hand_kriging_z_values,...
+            computer_kriging_z_values, percentages, scale_color_bar_per_tree, scaling_factor_image, 0);
+    end
+    % Displays varying percentages of computer counts that have undergone
+    % scaling
+    % Also displays the ground truth for comparison
+    if plot_varying_percentages_computer_counted_scaled == 1
+        plotVaryingPercentagesComputerCounted( original_size_of_image, cur_apple_type, hand_kriging_z_values,...
+            computer_kriging_z_values_scaled, percentages, scale_color_bar_per_tree, scaling_factor_image,...
+            percent_to_evaluate_scaling );
+    end
+    % Displays (1) yield map of hand and computer counts : Only 100 Percent
+    if plot_one_hundred_percent_computer_and_hand_counted == 1
+        plotOneHundredPercentComputerAndHandCountsSideBySide( original_size_of_image, cur_apple_type,...
+            hand_kriging_z_values, computer_kriging_z_values_scaled, scale_color_bar_per_tree, scaling_factor_image );
+    end
+    % Displays the ideal calibration between hand and algorithm counts for
+    % visibility
+    if plot_scaling_factor_map == 1
+        plotScalingFactorsHandToComputerCounts( cur_apple_type, pc_image_used, hand_image_used );
+    end
+    % Displays the error value ( +/- ) for each individual section throughout the
+    % orchard
+    if plot_error_map == 1
+        plotErrorMap( cur_apple_type, pc_image_used, hand_image_used, scaling_factor_computer_to_hand_count );
+    end
+end

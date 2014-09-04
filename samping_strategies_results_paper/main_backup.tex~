@@ -1,0 +1,23 @@
+
+\subsection{ Direct Extrapolation: No Sensor Data }
+All of our sampling methods are based on a process that starts with initially sampling groundtruth data. In this section, the results show that simply extrapolating this groundtruth subsample measurement can gain accuracy that is greater than scaling the sensor data.
+
+% apple
+For the apple datasets, it is seen that adding sensor data does in fact add accuracy. This is seen for both Granny Smith and Red Delicious apple datasets.
+\begin{figure}
+\centering
+\includegraphics[width=0.8\linewidth]{apple/Red_Delicious/Red_Delicious_Thinned_Random_Grouthtruth_Extrapolation.png}
+\caption{Red Delicious}
+\label{fig:Red_Delicious_Thinned_Random_Grouthtruth_Extrapolation}
+\end{figure}
+
+% grape
+For the grape datasets, direct extrapolation of the groundtruth is more effective than using sensor data. It is worth remembering that the sensor data would still provide dense image measurements that would be lost with a direct groundtruth extrapolation approach.
+\begin{figure}
+\centering
+\includegraphics[width=0.8\linewidth]{grape/PS/Petite_Syrah_Random_Grouthtruth_Extrapolation.png}
+\caption{Petite Syrah Groundtruth Extrapolation}
+\label{fig:Petite_Syrah_Random_Grouthtruth_Extrapolation}
+\end{figure}
+
+This phenomenon is explained by the linear offset apparent in grape datasets described in the next section.

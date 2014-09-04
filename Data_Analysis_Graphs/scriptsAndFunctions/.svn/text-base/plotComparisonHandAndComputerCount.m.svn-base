@@ -1,0 +1,40 @@
+function plotComparisonHandAndComputerCount( mean_errors_hand_count,...
+    all_computer_mean_errors, percentages_to_check, type_of_apple )
+    
+    for i = 1:size(all_computer_mean_errors)
+        computer_errors_percentages(i,:) = all_computer_mean_errors(i,:) * 100;
+    end
+    percentage_mean_errors_hand_count = mean_errors_hand_count * 100;
+    
+    total_sections = numel(percentage_mean_errors_hand_count);
+    all_sections = linspace(1,100, total_sections);
+
+    number_of_percentages = size(percentages_to_check, 2);
+    title_one = [type_of_apple, ' : Hand Count and Computer Count Error'];
+    figure('Name', title_one);
+    
+    hold all
+    plot(all_sections, percentage_mean_errors_hand_count);
+    for i = 1:number_of_percentages
+        plot(all_sections, computer_errors_percentages(i,:));
+    end
+    
+    inner_title = ['Comparison of hand count error and computer count error', ' : ', type_of_apple];
+    title(inner_title, 'fontsize', 12, 'fontweight', 'bold');
+    xlabel('Percentage of Total Sections Counted to Calculate Scaling Factor', 'fontsize',12,'fontweight','normal');
+    ylabel('Error (Percent)', 'fontsize',12,'fontweight','normal');
+    
+    legend_positions = number_of_percentages+1;
+    cell_array_titles = cell(1, legend_positions);
+    cell_array_titles{1, 1} = 'Ground Count Extrapolation';
+    for i = 2:legend_positions
+        cur_percentage = percentages_to_check(i-1);
+        cur_string = ['Computer Count : ' num2str(cur_percentage) ' Percent'];
+        cell_array_titles{1, i} = cur_string;
+    end
+    
+    axis([0 15 0 15]);
+    
+    legend(cell_array_titles);
+    hold off
+end

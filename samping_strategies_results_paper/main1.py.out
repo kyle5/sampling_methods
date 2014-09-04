@@ -1,0 +1,241 @@
+\section{ Stratified random sampling }
+Stratified sampling focuses on breaking a sampling space up into different groups (or strata). For our purposes, we created strata that divided up the yield distribution. Each strata encompasses one section of the yield distribution (from high, to medium, to low levels of counts). Samples are selected from each level, to ensure that a representative sample is selected.
+\begin{figure}[!h]
+\centering
+\begin{subfigure}[b]{0.4\textwidth}
+\includegraphics[width=\textwidth]{apple/Red_Delicious_Simulated/automatic/Red_Delicious_Thinned_Stratified_(Hand_+_Image)_r_sq_0_72.png}
+\caption{Red Delicious}
+\label{fig:gull}
+\end{subfigure}
+\begin{subfigure}[b]{0.4\textwidth}
+\includegraphics[width=\textwidth]{grape/PN_Simulated/automatic/Pinot_Noir_Stratified_(Hand_+_Image)_r_sq_0_36.png}
+\caption{Pinot Noir}
+\label{fig:mouse}
+\end{subfigure}
+\caption{Stratified Sampling is modestly effective for all types of datasets}
+\label{fig:animals}
+\end{figure}
+\pagebreak
+\section{ Spatial sampling }
+The current spatial sampling method simply focuses on iteratively moving points to locations that are far away from all other points.
+\begin{figure}[!h]
+\centering
+\begin{subfigure}[b]{0.4\textwidth}
+\includegraphics[width=\textwidth]{apple/Red_Delicious_Simulated/automatic/Red_Delicious_Thinned_Spatial_(Hand_+_Image)_r_sq_0_72.png}
+\caption{Red Delicious}
+\label{fig:gull}
+\end{subfigure}
+\begin{subfigure}[b]{0.4\textwidth}
+\includegraphics[width=\textwidth]{apple/Granny_Smith_Simulated/automatic/Granny_Smith_Spatial_(Hand_+_Image)_r_sq_0_56.png}
+\caption{Granny Smith}
+\label{fig:mouse}
+\end{subfigure}
+\caption{Spatial sampling yields modest improvements for apple datasets}
+\label{fig:animals}
+\end{figure}
+\subsection{ Direct Extrapolation: No Sensor Data }
+All of our sampling methods are based on a process that starts with initially sampling groundtruth data. In this section, the results show that simply extrapolating this groundtruth subsample measurement can gain accuracy that is greater than scaling the sensor data.
+For the apple datasets, it is seen that direct extrapolation is not effective.
+For the grape datasets, direct extrapolation of the groundtruth sample is very effective.
+\begin{figure}[!h]
+\centering
+\begin{subfigure}[b]{0.4\textwidth}
+\includegraphics[width=\textwidth]{apple/Red_Delicious_Simulated/automatic/Red_Delicious_Thinned_Random_(Hand_Only)_r_sq_0_72.png}
+\caption{Red Delicious Groundtruth Extrapolation}
+\label{fig:gull}
+\end{subfigure}
+\begin{subfigure}[b]{0.4\textwidth}
+\includegraphics[width=\textwidth]{grape/PS_Simulated/automatic/Petite_Syrah_Random_(Hand_Only)_r_sq_0_33.png}
+\caption{Petite Syrah Groundtruth Extrapolation}
+\label{fig:mouse}
+\end{subfigure}
+\caption{Direct extrapolation is ineffective for apple datasets and effective for grape datasets}
+\label{fig:animals}
+\end{figure}
+This phenomenon of direct extrapolation being more effective than any sampling method is explained by an analysis of using linear offset functions to map image estimates to yield estimates.
+\pagebreak
+\section{ Sampling: Scaling Function from Linear Regression }
+
+
+
+Instead of scaling with a scalar value, a linear scaling function can be obtained by doing linear regression on the subsample data collected. With the resulting function, after regression, sensor data can be mapped to predicted yield more accurately.
+
+
+
+A linear regression is seen to be effective for grape datasets.
+
+
+
+\begin{figure}[!h]
+\centering
+\begin{subfigure}[b]{0.4\textwidth}
+\includegraphics[width=\textwidth]{grape/PS_Simulated/automatic/Petite_Syrah_Random:_Regression_(Hand_+_Image)_r_sq_0_33.png}
+\caption{Petite Syrah}
+\label{fig:gull}
+\end{subfigure}
+\begin{subfigure}[b]{0.4\textwidth}
+\includegraphics[width=\textwidth]{grape/Chardonnay_2013_Simulated/automatic/Chardonnay_2013_Random:_Regression_(Hand_+_Image)_r_sq_0_50.png}
+\caption{Chardonnay}
+\label{fig:mouse}
+\end{subfigure}
+\caption{A linear regression operation to find an offset linear function is the most important factor to transferring grape image measurements to yield estimates}
+\label{fig:animals}
+\end{figure}
+A linear regression is seen to be less effective for apple datasets.
+
+
+
+\begin{figure}[!h]
+\centering
+\begin{subfigure}[b]{0.4\textwidth}
+\includegraphics[width=\textwidth]{apple/Red_Delicious_Simulated/automatic/Red_Delicious_Thinned_Random:_Regression_(Hand_+_Image)_r_sq_0_72.png}
+\caption{Red Delicious}
+\label{fig:gull}
+\end{subfigure}
+\begin{subfigure}[b]{0.4\textwidth}
+\includegraphics[width=\textwidth]{apple/Granny_Smith_Simulated/automatic/Granny_Smith_Random:_Regression_(Hand_+_Image)_r_sq_0_56.png}
+\caption{Granny Smith}
+\label{fig:mouse}
+\end{subfigure}
+\caption{Linear regression to obtain offset linear function: Apple datasets}
+\label{fig:animals}
+\end{figure}
+
+
+This suggests that there are some systematic differences between apple detection and grape detection. This is logical as the grape code includes features that the apple code does not, such as a clustering step in the grape algorithm.
+
+
+
+\pagebreak
+\section{ Section: Simulating algorithm performance }
+The previous sections have displayed the results that we have seen by using an emphircal approach. In this emphirical approach, we assume that we have already collected all of the groundtruth data from all farm plots, as well as image data from all farm plots. We have noticed through this emphirical study that the groundtruth data is organized by a normal distribution. As well, our algorithm has consistent error rates, which can also be modelled by a normal distribution. This means that we can first simulate groundtruth data and then simulate our algorithm's expected performance by adding an error distribution to the simulated groundtruth data. Through this process of simulation, we can model our algorithm's expected performance to a high degree of accuracy.
+
+
+We can model the performance of only using groundtruth data:
+\begin{figure}[!h]
+\centering
+\begin{subfigure}[b]{0.4\textwidth}
+\includegraphics[width=\textwidth]{apple/Red_Delicious_Simulated/automatic/Red_Delicious_Thinned_Random_(Hand_Only)_r_sq_0_72.png}
+\caption{Red Delicious: Empirical: Groundtruth Extrapolation}
+\label{fig:gull}
+\end{subfigure}
+\begin{subfigure}[b]{0.4\textwidth}
+\includegraphics[width=\textwidth]{apple/Red_Delicious_Simulated/automatic/Red_Delicious_Thinned_Simulated_(Hand_Only)_r_sq_0_72.png}
+\caption{Red Delicious: Simulated: Groundtruth Extrapolation}
+\label{fig:mouse}
+\end{subfigure}
+\caption{Simulation of groundtruth extrapolation}
+\label{fig:animals}
+\end{figure}
+
+
+We can also model the performance of our algorithm over grape datasets. In this model a linear function is used to transfer from hand to algorithm counts.
+\begin{figure}[!h]
+\centering
+\begin{subfigure}[b]{0.4\textwidth}
+\includegraphics[width=\textwidth]{grape/PS_Simulated/automatic/Petite_Syrah_Random:_Regression_(Hand_+_Image)_r_sq_0_33.png}
+\caption{Petite Syrah: Empirical}
+\label{fig:gull}
+\end{subfigure}
+\begin{subfigure}[b]{0.4\textwidth}
+\includegraphics[width=\textwidth]{grape/PS_Simulated/automatic/Petite_Syrah_Random:_Regression_(Hand_+_Image)_r_sq_0_33.png}
+\caption{Petite Syrah: Simulated}
+\label{fig:mouse}
+\end{subfigure}
+\caption{Simulated data yields almost identical results to empirical data.}
+\label{fig:animals}
+\end{figure}
+
+
+\pagebreak
+We can also model the performance of our algorithm over apple datasets. In this model a scaling factor is used to transfer from hand to algorithm counts.
+\begin{figure}[!h]
+\centering
+\includegraphics[width=8cm,height=6cm]{apple/Granny_Smith_Simulated/automatic/Granny_Smith_Simulated:_Scaling_Factor:_(Hand_+_Image)_r_sq_0_56.png}
+\caption{Simulated performance almost overlaps with empirical performance. Note: Empirical is labelled as 'random'}
+\label{Serie}
+\end{figure}
+
+
+\pagebreak
+
+
+Decreasing R-Squared values does not seem to have much effect on changing the error plots that are generated. This is explicable. If the errors can be represented by a normal distribution, then the errors act to balance each other out in our simulations. This means that unless R-squared values are very high, a decrease in performance is not estimated. This occurs as even when section by section error is at 20 percent, the overall error is not high because these section errors balance each other out.
+
+
+\begin{figure}[!h]
+\centering
+\begin{subfigure}[b]{0.4\textwidth}
+\includegraphics[width=\textwidth]{grape/Chardonnay_2013_r_squared/automatic/Chardonnay_2013_Simulated:_Regression_(Hand_+_Image)_r_sq_0_50.png}
+\caption{Petite Syrah: R^2: 0.50}
+\label{fig:gull}
+\end{subfigure}
+\begin{subfigure}[b]{0.4\textwidth}
+\includegraphics[width=\textwidth]{grape/Chardonnay_2013_r_squared/automatic/Chardonnay_2013_Simulated:_Regression_(Hand_+_Image)_r_sq_0_93.png}
+\caption{Petite Syrah: R^2: 0.93}
+\label{fig:mouse}
+\end{subfigure}
+\caption{``Low'' R-squared values yield graphs that are indistinguishable from one another}
+\label{fig:animals}
+\end{figure}
+\begin{figure}[!h]
+\centering
+\begin{subfigure}[b]{0.4\textwidth}
+\includegraphics[width=\textwidth]{grape/Chardonnay_2013_r_squared/automatic/Chardonnay_2013_Simulated:_Regression_(Hand_+_Image)_r_sq_0_97.png}
+\caption{Petite Syrah: R^2: 0.97}
+\label{fig:gull}
+\end{subfigure}
+\begin{subfigure}[b]{0.4\textwidth}
+\includegraphics[width=\textwidth]{grape/Chardonnay_2013_r_squared/automatic/Chardonnay_2013_Simulated:_Regression_(Hand_+_Image)_r_sq_0_99.png}
+\caption{Petite Syrah: R^2: 0.99}
+\label{fig:mouse}
+\end{subfigure}
+\caption{Only higher R-squared values yield graphs with distinguishable differences from one another}
+\label{fig:animals}
+\end{figure}
+
+
+
+
+
+
+\pagebreak
+
+
+\pagebreak
+
+
+Analyzing the correlation between ground counts and algorithm counts shows that there is a low correlation between ground counts and algorithm counts. A lack of correlation between the harvest monitor data and our estimates could be due to errors in the harvest monitor data. To analyze this, we attempted to smooth the sensor data over individual rows. In this approach, we tried to not smooth sensor data accross adjoint rows. With this approach, a low correlation score between ground counts and algorithm counts is still apparent.
+
+
+\begin{figure}[!h]
+\centering
+\begin{subfigure}[b]{0.4\textwidth}
+\includegraphics[width=\textwidth]{correlation/correlation_btw_algorithm_and_ground_counts.png}
+\caption{Correlation: 2 Meter Step}
+\label{fig:gull}
+\end{subfigure}
+\begin{subfigure}[b]{0.4\textwidth}
+\includegraphics[width=\textwidth]{correlation/correlation_btw_algorithm_and_ground_counts_wider_smoothing_area_only_over_rows.png}
+\caption{Correlation: 50 Meter Step only over rows}
+\label{fig:mouse}
+\end{subfigure}
+\caption{Correlation between Ground and Algorithm Counts}
+\label{fig:animals}
+\end{figure}
+
+
+\pagebreak
+
+
+\pagebreak
+\section{ Conclusion }
+This document summarizes results found between July and August 2014, with regards to sampling methods in orchards and vineyards. This includes an analysis of sampling methods that revolve around a scaling factor: random sampling, stratified random sampling, and spatial sampling. In addition, this also includes an analysis of pure groundtruth extrapolation and the usage of a linear function instead of a scaling factor.
+
+The main takeaway conclusions are different for apple and grape datasets.
+
+For grape datasets, stratified and spatial sampling approaches only improve performance marginally. Improvements, instead, came from either using a linear function for scaling sensor data or directly extrapolating sensor data. In fact, directly extrapolating the groundtruth subsample yields similar accuracy as using a linear scaling function and any sampling method (stratified, spatial, random) for all 3 datasets. The message from these results is that 1.) a linear scaling function is necessary for mapping image estimates to yield estimates and 2.) the sensor data is not adding much signal currently, if an extrapolation of the groundtruth sample is as effective as using sensor measurements and the groundtruth sample.
+
+For apple datasets, stratified and spatial sampling lead to small increases in performance that are marginal. A linear scaling function or direct extrapolation of groundtruth measurements did not lead to performance increases.
+
+

@@ -1,0 +1,312 @@
+ close all
+ clear all
+ clc
+
+ load redAppleVariables.mat
+ load greenAppleVariables.mat
+
+ % Flags for types of figures to be displayed
+ % The first flag shows the complete hand counts along with varying
+    % percentages of the known computer counts
+ % The second flag shows the complete computer counts along with
+    % the complete hand counts
+ flag_varying_percentages = 1;
+ flag_100_percent_computer_count_and_hand_count = 1;
+ 
+ % We did not use the red not thinned data
+ red_ground_counts = red_thinned_ground_counts;
+ red_pc_counts = red_thinned_pc_counts;
+
+ types_of_apples = 2;
+ 
+ apple_types = {'Green'; 'Red'};
+ scale_map = [1, 0];
+
+ % Cell arrays are setup to iterate through the types of apples
+ apple_types_ground_counts = cell(1, types_of_apples);
+ apple_types_ground_counts{1, 1} = green_ground_counts;
+ apple_types_ground_counts{1, 2} = red_ground_counts;
+ 
+ apple_types_pc_counts = cell(1, types_of_apples);
+ apple_types_pc_counts{1, 1} = green_pc_counts;
+ apple_types_pc_counts{1, 2} = red_pc_counts;
+ 
+ % This determines how much the image increases in size
+ scaling_factor_image = 10;
+ 
+ % Loop through the types of apples, greens and then reds
+ for i = 1:types_of_apples
+     pc_image_used = apple_types_pc_counts{1, i};
+     hand_image_used = apple_types_ground_counts{1, i};
+     
+     [pc_counted_rows, pc_counted_columns] = size(pc_image_used);
+     [hand_counted_rows, hand_counted_columns] = size(hand_image_used);
+     
+     if pc_counted_rows == hand_counted_rows
+        rows_cur_map = pc_counted_rows;
+     else
+        error('Number of rows in computer map not equal to number of rows in hand count map');
+     end
+     if pc_counted_columns == hand_counted_columns
+        columns_cur_map = pc_counted_columns;
+     else
+        error('Number of rows in computer map not equal to number of rows in hand count map');
+     end
+     
+     % Multiple by the scaling factor and add an extra row and column
+        % This way none of the points are on the edge of the image
+     rows_cur_map_scaled = (rows_cur_map + 1) * scaling_factor_image;
+     columns_cur_map_scaled = (columns_cur_map + 1) * scaling_factor_image;
+
+     x_indicies = 1:rows_cur_map;
+     y_indicies = 1:columns_cur_map;
+
+     scaled_x_indicies = 1:(rows_cur_map_scaled);
+     scaled_y_indicies = 1:(columns_cur_map_scaled);
+
+     % X and Y will be used with every instance of the kriging() function
+     [X,Y] = meshgrid(1:rows_cur_map_scaled, 1:columns_cur_map_scaled);
+
+     
+     scaling_input_to_output = scaling_factor_image;
+     
+     total_sections = rows_cur_map * columns_cur_map;
+     
+     % newx, newy, and newz represent the locations of the x, y points that are input into
+     % the variogram method. They are all n * 1 column vectors
+     newx_hand = ones(total_sections, 1);
+     newy_hand = ones(total_sections, 1);
+     newz_hand = ones(total_sections, 1);
+
+     for j = 1:rows_cur_map
+            for k = 1:columns_cur_map
+                current_place = ( j - 1 ) * ( columns_cur_map ) + k;
+                current_hand_count = hand_image_used(j, k);
+
+                newx_hand(current_place, 1) = j * scaling_factor_image;
+                newy_hand(current_place, 1) = k * scaling_factor_image;
+                newz_hand(current_place, 1) = current_hand_count;
+            end
+     end
+
+     maxdist = scaling_factor_image * rows_cur_map;
+     nrbins = rows_cur_map;
+     
+     % Get the variogram for the hand values and do kriging on the hand
+     % values as well
+     
+     % -variogram() gets an experimental variogram for the data, which shows
+     % the changes in z values (fruit counts) over an area
+     % -variogramfit() finds an equation that fits the data through
+     % regression
+     % -kriging() finds the expected z values at each of the unknown points.
+     % This is done using the equation provided from variogramfit
+     v_hand = variogram([ newx_hand newy_hand ], newz_hand, 'plotit', false, 'maxdist', maxdist, 'nrbins', nrbins);
+     [dum,dum,dum,vstruct_hand] = variogramfit(v_hand.distance,v_hand.val,[],[],[],'model','exponential', 'plotit', false);
+     [Z_hand_values_returned_kriging, Z_error_hand] = kriging(vstruct_hand, newx_hand, newy_hand, newz_hand, X, Y);
+     
+     % This section does two things
+     % First: It finds the scaling factor, which represents the ratio in counts
+        % that are expected between hand counting and computer counting
+     % Second: It gets the max computer count and hand count over a
+        % section
+     scaling_factor_percentages = [100, 50, 25, 10, 5, 2, 1];
+     cur_scaling_factor_percentage = scaling_factor_percentages(1, 4);
+     number_of_sections_to_count_cur_scaling_factor = floor(total_sections * cur_scaling_factor_percentage / 100);
+     rand_sections_scaling = randperm(total_sections);
+     
+     % This sets up a random array of sections to count to obtain the
+     % scaling factor
+     rand_sections_to_count_scaling = rand_sections_scaling( 1:number_of_sections_to_count_cur_scaling_factor );
+     
+     max_hand_count = 0;
+     max_computer_count = 0;
+     hand_count_scaling_factor = 0;
+     computer_count_scaling_factor = 0;
+     for j = 1:rows_cur_map
+        for k = 1:columns_cur_map
+            current_place = ( j - 1 ) * ( columns_cur_map ) + k;
+            
+            current_hand_count = hand_image_used(j, k);
+            current_computer_count = pc_image_used(j, k);
+            
+            if ismember(current_place, rand_sections_to_count_scaling)
+                hand_count_scaling_factor = hand_count_scaling_factor + current_hand_count;
+                computer_count_scaling_factor = computer_count_scaling_factor + current_computer_count;        
+            end
+            if current_computer_count > max_computer_count
+                max_computer_count = current_computer_count;
+            end
+            if current_hand_count > max_hand_count
+                max_hand_count = current_hand_count;
+            end
+        end
+     end
+     
+     % We currently only scale green apple counts
+        % If 'i' indicates that we are processing green apples, then the
+        % image is scaled
+     cur_map_should_be_scaled = scale_map(1, i);
+     if computer_count_scaling_factor > 0 && hand_count_scaling_factor > 0 && cur_map_should_be_scaled == 1
+         scaling_factor_hand_to_computer_count = computer_count_scaling_factor / hand_count_scaling_factor;
+     else
+         scaling_factor_hand_to_computer_count = 1;
+     end
+     
+     
+     % Next, we need to get the computer counts for the different
+     % percentages of the orchard sampled
+        % Percent of sections sampled by the computer varies between 10, 25, 50, and 100
+        % percent of all sections
+        
+     percentages = [100, 50, 25, 10];
+     num_percentages = size(percentages, 2);
+
+     computer_kriging_z_values = cell(num_percentages);
+     
+     for p = 1:num_percentages
+         cur_percentage = percentages(1,p);
+         number_of_sections_to_count_cur_percentage = floor(total_sections * cur_percentage / 100);
+         
+         rand_sections = randperm(total_sections);
+         rand_sections_to_count = rand_sections( 1:number_of_sections_to_count_cur_percentage );
+         
+         newx_computer = ones(number_of_sections_to_count_cur_percentage, 1);
+         newy_computer = ones(number_of_sections_to_count_cur_percentage, 1);
+         newz_computer = ones(number_of_sections_to_count_cur_percentage, 1);
+
+         % index for computer counts
+         cur_comp_count = 0;
+
+         % Get values in expanded image
+         for j = 1:rows_cur_map
+            for k = 1:columns_cur_map
+                current_place = ( j - 1 ) * ( columns_cur_map ) + k;
+                if ismember(current_place, rand_sections_to_count)
+                    cur_comp_count = cur_comp_count + 1;
+                    current_computer_count_one_section = pc_image_used(j, k);
+                    
+                    newx_computer(cur_comp_count, 1) = j * scaling_factor_image;
+                    newy_computer(cur_comp_count, 1) = k * scaling_factor_image;
+                    newz_computer(cur_comp_count, 1) = current_computer_count_one_section;
+                end
+            end
+         end
+         
+         % Scale the yield map if the current type is green apples
+         cur_map_should_be_scaled = scale_map(1, i);
+         newz_computer = newz_computer/scaling_factor_hand_to_computer_count;
+         
+         % Variograms are made and kriging is completed for all of the
+         % computer counts
+         v_computer = variogram([ newx_computer newy_computer ], ...
+             newz_computer,'plotit',false, 'maxdist', maxdist, 'nrbins', nrbins);
+         [dum,dum,dum,vstruct_computer] = variogramfit(v_computer.distance,v_computer.val,[],[],[],'model','exponential', 'plotit', false);
+         [ Z_computer_value_returned_kriging, Z_error_computer ] = kriging(vstruct_computer, newx_computer, newy_computer, newz_computer, X, Y);
+         
+         computer_kriging_z_values{p} = Z_computer_value_returned_kriging;
+     end
+     
+     normalized_scaled_indicies_x = scaled_x_indicies / scaling_factor_image;
+     normalized_scaled_indicies_y = scaled_y_indicies / scaling_factor_image;
+
+     % We are more interested in the data in per tree terms instead of per section terms
+        % In dividing the z values by 3, we get the data in per tree terms
+     Zhat_hand = Z_hand_values_returned_kriging/3;
+     
+     % This sets up the max range of the color bar. I thought that it
+     % looked best with a small scaling factor of 1.1, so that the map was
+     % lighter colored
+        % By changing the scaling factor, we change the color of the map. If
+        % you would like to change the appearance
+     scale_color_bar_per_section = max(max_computer_count, max_hand_count)*1.1;
+     
+     % set scale for trees
+     scale_color_bar_per_tree = scale_color_bar_per_section / 3;
+     cur_type_of_apple = apple_types{i, :};
+
+     % This sets up the title to be used in each of the subplots
+        % scaling_factor_hand_to_computer_count is the ratio that the image
+        % has been scaled to
+     actual_scaling_factor_string = sprintf('%.3g', 1/scaling_factor_hand_to_computer_count);
+     if scaling_factor_hand_to_computer_count ~= 1
+        scaling_factor_final = [' Scaling Factor of ', actual_scaling_factor_string];
+     else
+        scaling_factor_final = 'No Scaling';
+     end
+     
+     % This shows varying percentages of the computer counts, along with
+     % the complete hand counts
+     if flag_varying_percentages == 1   
+         title_one = ['Yield Map ', cur_type_of_apple];
+         figure('Name', title_one, 'Position', [100, 100, 1000, 1200]);
+         subplot(3, 2, 1);
+         
+         % Show the hand counts in the first subplot
+         imagesc(normalized_scaled_indicies_x, normalized_scaled_indicies_y, Zhat_hand);
+         t1 = colorbar('YTick', 1:scale_color_bar_per_tree);
+         set(get(t1,'ylabel'),'String', 'Apples Counted Per Tree');
+         caxis([0 scale_color_bar_per_tree]);
+
+         title('Yield Map - Ground Truth', 'fontsize', 12, 'fontweight', 'bold');
+         ylabel('Sections', 'fontsize', 12, 'fontweight', 'normal');
+         xlabel('Rows', 'fontsize', 12, 'fontweight', 'normal');
+         set(gca,'YTick', 1:columns_cur_map);
+         set(gca,'XTick', 1:rows_cur_map);
+         
+         % For each percentage setup a subplot to show the computer counts
+         % over that percentage
+         for j = 1:num_percentages
+             cur_percentage = percentages(j);
+             string_of_percentage = num2str(cur_percentage);
+
+             subplot(3, 2, j+2)
+             z_comp_cur_percent = computer_kriging_z_values{j};
+             
+             % Convert from per section terms to per tree terms
+             z_comp_cur_percent_per_tree = z_comp_cur_percent/3;
+             imagesc(normalized_scaled_indicies_x, normalized_scaled_indicies_y, z_comp_cur_percent_per_tree);
+
+             caxis([0 scale_color_bar_per_tree]);
+             title_one = {['Computer Count - ', scaling_factor_final], ['Percent of Total Sections Sampled : ', string_of_percentage ]};
+             title(title_one, 'fontsize', 12, 'fontweight', 'bold');
+             ylabel('Sections', 'fontsize', 12, 'fontweight', 'normal');
+             xlabel('Rows', 'fontsize', 12, 'fontweight', 'normal');
+             set(gca,'YTick', 1:columns_cur_map);
+             set(gca,'XTick', 1:rows_cur_map);
+         end
+     end
+     
+     % This shows only the complete hand and computer counts
+        % More concise presentation and better looking, but less information 
+     if flag_100_percent_computer_count_and_hand_count == 1
+        title_one = ['Yield Map ', cur_type_of_apple];
+        figure('Name', title_one, 'Position', [100, 100, 1300, 600]);
+        
+        % Show the hand counts
+        subplot(1, 2, 1);
+        imagesc(normalized_scaled_indicies_x, normalized_scaled_indicies_y, Zhat_hand);
+        t1 = colorbar('YTick', 1:scale_color_bar_per_tree);
+        set(get(t1,'ylabel'),'String', 'Apples Counted Per Tree');
+        caxis([0 scale_color_bar_per_tree]);
+        title('Ground Truth', 'fontsize', 12, 'fontweight', 'bold');
+        ylabel('Sections', 'fontsize', 12, 'fontweight', 'normal');
+        xlabel('Rows', 'fontsize', 12, 'fontweight', 'normal');
+        set(gca,'YTick', 1:columns_cur_map);
+        set(gca,'XTick', 1:rows_cur_map);
+        
+        subplot(1, 2, 2);
+        z_comp_100_percent = computer_kriging_z_values{1};
+        z_comp_100_percent_per_tree = z_comp_100_percent/3;
+        imagesc(normalized_scaled_indicies_x, normalized_scaled_indicies_y, z_comp_100_percent_per_tree);
+        t2 = colorbar('YTick', 1:scale_color_bar_per_tree);
+        set(get(t2,'ylabel'),'String', 'Apples Counted Per Tree');
+        caxis([0 scale_color_bar_per_tree]);
+        title_two = ['Computer Count - ', scaling_factor_final];
+        title(title_two, 'fontsize', 12, 'fontweight', 'bold');
+        ylabel('Sections', 'fontsize', 12, 'fontweight', 'normal');
+        xlabel('Rows', 'fontsize', 12, 'fontweight', 'normal');
+        set(gca,'YTick', 1:columns_cur_map);
+        set(gca,'XTick', 1:rows_cur_map);
+     end
+ end

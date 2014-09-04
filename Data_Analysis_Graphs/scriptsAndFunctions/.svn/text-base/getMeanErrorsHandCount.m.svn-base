@@ -1,0 +1,30 @@
+function [ all_hand_mean_errors ] = getMeanErrorsHandCount( ground_counts, actually_counted)
+    
+    global loop_iterations;
+    
+    total_sections = numel(ground_counts);
+    
+    all_hand_mean_errors = ones(1, total_sections);
+    
+    for num_sections = 1:total_sections
+        ratioOfSections = num_sections/total_sections;
+        all_hand_count_errors_cur_num_sections = ones(1, loop_iterations);
+        for i = 1:loop_iterations
+            totalCount = 0;
+            rand_possible_sections = randperm(total_sections);
+            
+            for j = 1:num_sections
+                rand_section = rand_possible_sections(j);
+                curCount = ground_counts(rand_section);
+                totalCount = totalCount + curCount;
+            end
+            
+            estimatedApples = totalCount/ratioOfSections;
+            curError = (estimatedApples - actually_counted)/actually_counted;
+            absOfCurError = abs(curError);
+            all_hand_count_errors_cur_num_sections(1, i) = absOfCurError;
+        end
+        mean_error = mean(all_hand_count_errors_cur_num_sections);
+        all_hand_mean_errors(1, num_sections) = mean_error;
+    end
+end

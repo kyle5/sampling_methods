@@ -1,0 +1,106 @@
+#ifndef __GET_RANDOM_POINTS_new_object_model_H__
+#define __GET_RANDOM_POINTS_new_object_model_H__
+
+#include <algorithm>
+#include <signal.h>
+#include <sstream>
+#include <time.h>
+#include <unistd.h>
+#include "DT_new.h"
+#include "util_new.h"
+
+// additional headers
+#include <iostream>
+#include <utility>
+#include <stdexcept>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
+using namespace cv;
+using namespace std;
+
+typedef vector< vector< double > > v_o_d;
+typedef vector< cv::Point2f > v_p2f;
+typedef cv::Mat mat;
+typedef std::pair< v_p2f, vector < int > > one_type;
+typedef std::pair< v_o_d, v_o_d > two_type;
+
+struct parameters_struct {
+	Mat ground_counts;
+	double comparison_error;
+	double error_decrease_requested;
+	parameters_struct( Mat ground_counts_input, double comparison_error_input, double error_decrease_requested_input ) {
+		ground_counts = ground_counts_input;
+		comparison_error = comparison_error_input;
+		error_decrease_requested = error_decrease_requested_input;
+	};
+};
+
+class SamplingObjectModel {
+	private:
+		vector< Point2f > final_points;
+		vector< vector< int > > indices_at_each_iteration_in_spatial_space;
+		vector< vector< double > > spatial_probability_in_spatial_space;
+		vector< vector< double > > stratified_probability_in_spatial_space;
+		vector< vector< double > > combined_stratified_and_spatial_probability_in_spatial_space;
+		vector< vector< int > > distribution_indices_in_spatial_space;
+		vector< double > stratified_indices_organized_by_spatial_indices;
+		vector< vector< double > > spatial_distance_in_spatial_space;
+		vector< vector< double > > stratified_distance_in_spatial_space;
+		double error_value_recorded;
+		double error_value_lower_limit;
+		double error_value_upper_limit;
+
+		vector<double> all_set_error_values;
+		vector<double> all_spatial_metric_scores;
+		vector<double> all_stratified_metric_scores;
+	public:
+		enum Strategy_new {
+			GLOBAL_NEW, LOCAL_NEW, HYBRID_NEW
+		};
+
+		void generate_random_new(vector<Point_2_new> &points, unsigned npoints, MTRand &rng);
+		void generate_darts_new(vector<Point_2_new> &points, unsigned npoints, MTRand &rng);
+		void update_statistics_new(const DT_new &dt, unsigned it, double &global_md, double &avg_md, bool output );
+		void get_random_points_new( unsigned max_iter, double max_md, Strategy_new strategy, bool silent, unsigned npoints, unsigned long seed_variable, Mat algorithm_counts, double weight_spatial, cv::Mat valid_counts );
+void SamplingObjectModel::get_random_points_new( unsigned max_iter, double max_md, Strategy_new strategy, bool silent, unsigned npoints, unsigned long seed_variable, Mat algorithm_counts, double weight_spatial, Mat valid_counts )
+
+		void circumference_check( vector< Circle_2_new > list_of_circles );
+		void usage_new();
+		vector< vector< int > > get_indices_at_each_iteration_in_spatial_space(  );
+		vector< vector< double > > get_spatial_probability_in_spatial_space(  );
+		vector< vector< double > > get_stratified_probability_in_spatial_space(  );
+		vector< vector< double > > get_combined_stratified_and_spatial_probability_in_spatial_space(  );
+		vector< vector< int > > get_distribution_indices_in_spatial_space( );
+		vector< double > get_stratified_indices_organized_by_spatial_indices(  );
+		vector< vector< double > > get_spatial_distance_in_spatial_space(  );
+		vector< vector< double > > get_stratified_distance_in_spatial_space(  );
+
+		vector< double > get_all_set_error_values();
+		vector< double > get_all_spatial_metric_scores();
+		vector< double > get_all_stratified_metric_scores();
+
+		double get_error_value_recorded();
+		double get_error_value_lower_limit();
+		double get_error_value_upper_limit();
+
+		vector< Point2f > get_final_points(  );
+};
+
+double stratified_metric( vector< int > final_point_indices, Mat algorithm_counts, Mat ground_counts, vector<int> all_stratified_indices, int total_possible_points );
+double spatial_metric( vector< int > final_point_indices, Mat algorithm_counts );
+double distance_between_indices( const Mat algorithm_counts, int index_one, int index_two );
+
+vector<int> get_stratified_point_indices_in_possible_space( vector<int> point_indices, vector<int> all_stratified_indices );
+
+template <class T> void save_data_to_csv_file( std::ofstream &input_stream, std::vector< T > input_vector );
+vector< double > get_closest_distances( vector<Point2f> index_point_centers, vector<Point2f> all_other_vertex_coordinates );
+void check_squared_radii( vector < pair < Circle_2_new, int > > sorted_list_of_circles_altered );
+bool circle_2_new_comparison_function( std::pair< Circle_2_new, int> pair_1, std::pair< Circle_2_new, int > pair_2 );
+vector< Point2f > get_all_index_point_centers( Mat algorithm_counts );
+double compute_error_of_set( vector<int> final_point_indices, Mat ground_counts, Mat algorithm_counts, double total_algorithm_count, double total_ground_count );
+
+template <class T > void verify_distribution_sum( vector<T> vector_input );
+template <class T> T sum_distribution( vector<T> input_vector );
+template <class T > vector< T > normalize_distribution( vector<T> vector_input );
+#endif

@@ -1,0 +1,166 @@
+/**
+ * This file is part of the optimization tool fpo which implements the
+ * farthest point optimization method proposed in the paper
+ *
+ *   T. Schlömer, D. Heck, O. Deussen:
+ *   Farthest-Point Optimized Point Sets with Maximized Minimum Distance
+ *   HPG '11: High Performance Graphics Proceedings
+ * 
+ * fpo is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef DT_new_H
+#define DT_new_H
+
+#include <set>
+#include <vector>
+using std::vector;
+
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Delaunay_triangulation_2.h>
+#include <CGAL/Triangulation_vertex_base_2.h>
+#include <CGAL/Triangulation_face_base_with_info_2.h>
+
+
+#include <algorithm>
+#include <fstream>
+
+#include <typeinfo>
+
+#include <opencv2/core/core.hpp>
+using cv::Point2f;
+
+// CGAL Types and helper structs
+typedef CGAL::Exact_predicates_inexact_constructions_kernel  K_new;
+typedef CGAL::Triangulation_vertex_base_2<K_new>                 Tvb;
+
+typedef K_new::Circle_2  Circle_2_new;
+typedef K_new::Point_2   Point_2_new;
+
+struct Node_new;
+typedef std::set<Node_new> FaceTree_new;
+
+// Collects information about a Delaunay face
+struct FaceInfo_new {
+  Circle_2_new circle;            // Circumcircle
+  FaceTree_new::iterator node;    // Reference to Node_new in sorting tree
+  int id;                     // A unique ID to break ties when sorting
+  bool main_face;             // True if center lies inside unit square
+  
+  FaceInfo_new() { circle = Circle_2_new(Point_2_new(0, 0), 0); id = ++maxid; }
+  static int maxid;
+};
+
+typedef CGAL::Triangulation_face_base_with_info_2<FaceInfo_new, K_new>  Tfb_new;
+typedef CGAL::Triangulation_data_structure_2<Tvb,Tfb_new>           Tds_new;
+typedef CGAL::Delaunay_triangulation_2<K_new, Tds_new>                  CDT_new;
+typedef CDT_new::Vertex_handle  VH_new;
+typedef CDT_new::Face_handle    FH_new;
+
+// Tree Node_new that compares faces by the radius of their circumcircle
+struct Node_new {
+  FH_new face;
+  bool operator< (const Node_new &n) const {
+		const double &r1 =   face->info().circle.squared_radius();
+		const double &r2 = n.face->info().circle.squared_radius();
+		return (r1 == r2) ? (face->info().id > n.face->info().id) : (r1 > r2);
+  }
+};
+
+// Subsumes a Delaunay vertex and its toroidal replications
+struct Site_new {
+    Site_new() : vertex(0), nreplications(0) {};
+    VH_new vertex;
+    VH_new replications[8];  // In 2D there can be a maximum of eight replications
+    unsigned nreplications;
+};
+
+
+// This class implements a Delaunay triangulation based on the one provided by
+// CGAL. It extends the CGAL implementation to handle periodic boundary
+// conditions, and concurrently maintains a binary tree to efficiently
+// determine the largest circumcircle of a face in the triangulation.
+class DT_new
+{
+private:
+    CDT_new dt;                // The CGAL delaunay triangulation
+    vector<Site_new> sites;    // The vertices and their replications
+    FaceTree_new sorted_faces; // Faces sorted by the size of their circumcircle
+    
+    Point_2_new clip[2];          // Optional clipping box for vertex replications
+    vector<FH_new> conflict_faces;// Faces helper array for conflict checks
+    vector<CDT_new::Edge> conflict_edges;// Edges helper array for conflict checks
+    
+public:
+    // Constructor. The DT is immediately created from the given set of
+    // points. The clip heuristic clips toroidal vertex replications that are
+    // far from the boundary and will not influence it.
+    DT_new(const vector<Point_2_new> &points, bool clip_heuristic = false);
+    ~DT_new();
+		
+		// Kyle Created: returns a list of all possible circles, sorted by their circumference
+		vector<Circle_2_new> global_sorted_circumcircles( void ) const;
+
+    // Determines the global largest circumcircle by utilizing the sorted tree
+    // of faces. 'face' is filled with the corresponding face handle.
+    Circle_2_new global_largest_circumcircle(FH_new &face) const;
+    
+    // Determines the global largest circumcircle by simply iterating over all
+    // faces. 'face' is filled with the corresponding face handle.
+    Circle_2_new global_largest_circumcircle_bruteforce(FH_new &face) const;
+    
+    // Determines the local largest circumcircle by iterating over all faces
+    // incident to one of the vertices in 'neighbors'. 'face' is filled with
+    // the corresponding face handle.
+    Circle_2_new local_largest_circumcircle(const vector<VH_new> &neighbors, FH_new &face) const;
+    
+    // Sets vertex 'i' in the triangulation, i.e. inserts a point at the given
+    // location, and up to 8 toroidal replications. 'face' is used as a hint
+    // on where to insert the main point. 'setup' is for initial construction.
+    void set_vertex(unsigned i, const Point_2_new &point, const FH_new &face,
+                    bool setup = false);
+    
+    // Clears vertex 'i', i.e. removes it and its replications from the DT
+    void clear_vertex(unsigned i);
+    
+    // Determines all vertices that are adjacent to the vertex 'i'
+    void incident_vertices(unsigned i, vector<VH_new> &handles) const;
+    
+    // Some inline functions
+    inline VH_new get_vertex(unsigned i) { return sites[i].vertex; };
+    inline unsigned number_of_vertices() const { return sites.size(); };
+    
+    // Some utility functions
+    void get_statistics(double &global_md, double &avg_md) const;
+    void save_triangulation_eps(const char *fname, bool debug = false) const;
+    void save_vertices_eps(const char *fname) const;
+    void save_vertices_rps(const char *fname) const;
+    vector< cv::Point2f > return_vertices_points() const;
+private:
+    // Inserts a point into the DT and updates affected faces accordingly.
+    // 'face' may be used as a hint on where to insert the point. The CGAL
+    // vertex handle is returned.
+    VH_new insert_vertex(const Point_2_new &p, const FH_new &face);
+    
+    // Removes a vertex from the DT and updates affected faces accordingly
+    void remove_vertex(VH_new v);
+    
+    // Removes a face from the tree of sorted faces
+    void invalidate_face(const FH_new &face);
+    
+    // Updates FaceInfo_new for a given face
+    void update_face(const FH_new &face);
+};
+
+#endif

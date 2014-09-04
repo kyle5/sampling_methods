@@ -1,0 +1,3 @@
+#!/bin/sh
+mkdir -p .build
+pdflatex -d --shell-escape --into=.build python_loops_latex.tex && cp .build/python_loops_latex.pdf .

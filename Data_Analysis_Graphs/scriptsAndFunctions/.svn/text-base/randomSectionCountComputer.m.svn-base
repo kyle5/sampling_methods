@@ -1,0 +1,12 @@
+function [ sample_count_computer ] = randomSectionCountComputer( pc_counts, num_sections_to_count )
+    
+    total_sections = numel(pc_counts);
+    rand_possible_sections = randperm(total_sections);
+
+    sample_count_computer = 0;
+    for j = 1:num_sections_to_count
+        rand_section = rand_possible_sections(j);
+        cur_count_computer = pc_counts(rand_section);
+        sample_count_computer = sample_count_computer + cur_count_computer;
+    end
+end

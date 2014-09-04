@@ -1,0 +1,22 @@
+function plotHandCountError( all_hand_count_errors, type_of_apple )
+    total_sections = numel(all_hand_count_errors);
+
+    all_sections = linspace(1, 100, total_sections);
+    
+    percentage_mean_error_hand_count = all_hand_count_errors * 100;
+    standardDeviationHand = std(percentage_mean_error_hand_count);
+    
+    plus_std_hand = percentage_mean_error_hand_count + standardDeviationHand;
+    minus_std_hand = percentage_mean_error_hand_count - standardDeviationHand;
+    
+    title_one = [ type_of_apple, ' : ', 'Hand Count Error'];
+    figure('Name', title_one);
+    plot(all_sections, percentage_mean_error_hand_count, all_sections, plus_std_hand, all_sections, minus_std_hand);
+    xlabel('Percentage of Total Sections Counted before Extrapolation', 'fontsize',12,'fontweight','normal');
+    ylabel('Error (Percent)', 'fontsize',12,'fontweight','normal');
+    
+    axis([0 50 0 20]);
+    
+    title(title_one, 'fontsize', 12, 'fontweight', 'bold');
+    legend('Error', 'Error Plus Std Deviation', 'Error Minus Std Deviation');
+end

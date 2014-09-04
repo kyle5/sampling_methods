@@ -1,0 +1,62 @@
+	// load globals
+	// sets up parameters for algorithm/hand count number of sections
+	// Sets up the X, Y values
+	// gets optimal spatial locations
+		// expands optimal spatial locations
+	// For each percentage:
+		// Sets up percentage results structures
+		// gets # hand sampled
+		// For number of sections for computer to count:
+			// Sets up results for computer count results
+			// Optimal idx from [row/col] to matrix idx
+			// gets the actual optimal indices that will be used
+				// sets up boolean matrices representing chosen point's locations
+			// For iteration:
+				// Sets up iteration results (8 dimensional)
+					// counting variable "count_var" keeps track of the current index within "a" && "b" variable loops
+				// For "a" - connected/disconnected:
+					// sets up random hand sampling and computer imaged (connected/disconnected)
+						// these are the original random sections selected
+					// Original scaling factors 1<b<4
+					// ensures that sections for scaling and sections for algorithm counts do not overlap 
+						// If more sections needed:
+							// Get random sections
+						// else:
+							// Get random indices within computer sampled sections
+						// totals up the counts
+					// computes the scaling factor from the total algorithm and hand counts
+					// Stratified
+						// Sort ground/computer counts
+						// Get idx and actual counts for stratified
+					// get counts scaled by the scaling factors
+					// standard deviation organization
+						// gets std() for each algorithm sampled point
+					// get scaled counts by std_dev scaling factor
+					// For b (each error computation):
+							// Either (currently only 4 if statements):
+		            // % Unscaled
+		            // % Scaled
+		            // % Kriging
+		            // % Varied levels scaling factor
+									// these 4 can be combined into 1 piece of code
+								// std dev and spatially spread out counts
+									// same operation
+										// setup algorithm counts
+										// setup boolean matrix signifying sampled locations
+										// setup other values as the computed "averages" or "kriging result"
+								// perhaps all of these operations can be combined?
+					// error computation for the current counts
+						// 3 forms
+				// save the iteration error values to a results structure
+			// Averages over the current iteration
+			// saves to the number of sections results set
+		// saves results for current percentage to overall results set
+
+	// Also:
+		// computes average scaling factors
+			// plots this
+		// times all of the operations
+		// skips computation of:
+			// continuous sample analysis
+			// skips unscaled
+			// skips kriging

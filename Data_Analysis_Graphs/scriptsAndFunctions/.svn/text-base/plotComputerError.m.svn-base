@@ -1,0 +1,26 @@
+function [x] = plotComputerError(all_computer_mean_errors, type_of_apple, percent_of_sections_computer_counted )
+    percent_of_sections_computer_counted_str = num2str(percent_of_sections_computer_counted);
+    
+    total_sections = size(all_computer_mean_errors, 2);
+    
+    percentage_mean_error_computer_count = all_computer_mean_errors * 100;
+    
+    all_sections = linspace(1, 100, total_sections);
+    
+    standardDeviationComputer = std(percentage_mean_error_computer_count);
+    plus_std_computer = percentage_mean_error_computer_count + standardDeviationComputer;
+    minus_std_computer = percentage_mean_error_computer_count - standardDeviationComputer;
+    
+    figure_title = [type_of_apple, ' : ', percent_of_sections_computer_counted_str, ': Computer Count Error with Standard Deviation'];
+    figure('Name', figure_title);
+    plot(all_sections, percentage_mean_error_computer_count, all_sections, plus_std_computer, all_sections, minus_std_computer);
+    xlabel('Percentage of Total Sections Hand Counted to Calculate Scaling Factor', 'fontsize',12,'fontweight','normal');
+    ylabel('Error (Percent)', 'fontsize',12,'fontweight','normal');
+    inner_title = [type_of_apple, ' : Computer Error : ', percent_of_sections_computer_counted_str, ' Percent Total Evaluation'];
+    title(inner_title, 'fontsize', 12, 'fontweight', 'bold');
+    legend('Error', 'Error Plus Std Deviation', 'Error Minus Std Deviation');
+    
+    axis([0 50 0 15]);
+    
+    x = 1;
+end

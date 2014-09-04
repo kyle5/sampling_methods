@@ -1,0 +1,83 @@
+// other random points version w/o DT
+
+shared code:
+1 // instance method: get one set using farthest point
+	// loop arbitrary: for i in 1:arbitrary_number
+		// loop over all possible points ( in grid ): for j in 1:points
+			// take point out of list as cur_point
+4			// iterate through all points not in the set
+
+Method 1: purely spatial:
+1-4 as shared code
+spatial 5
+				// if closest distance pos_point > closest distance cur_point:
+					// add pos_point
+	// same stopping condition
+spatial end
+
+Stratified and random method
+1-4 as shared code
+strat 5
+				// compute distribution for both spatial and stratified
+					// order points by spatial distance
+						// spatial distribution weight assigned to every possible point
+					// order points by stratified distance
+						// stratified distribution weight assigned to every possible point
+					// create combined distribution by combining both the spatial and the stratified distributions for every point
+						// 0.9 weight for spatial
+						// 0.1 weight for stratified
+					// sample from the top 5 points in the combined distribution
+					// add sampled point
+	// stopping condition?
+strat end
+
+combined approach
+1-4 as shared code
+	get current point
+	if spatial_optimization
+		
+	if stratified_optimization
+		
+terms:
+N: number of points to obtain
+M: number of points on the grid
+V: number of valid points
+
+data_organization:
+points_selected: array of int: index values in real space (length N)
+stratified_indices: array of int mapping spatial_index (1-M) -> stratified_index (1-V) (length M)
+stratified_occupied: array of 1s at locations occupied in stratified space (length V)
+valid_indices: array of the indices in spatial spatial space that are possible locations (length V)
+spatial_index_occupied_by: integer array designating number of points at each spatial index (length M)
+
+
+
+pipeline:
+<iteration i out of numel(points_selected) >
+cur_point_index = points_selected[cur_iteration];
+cur_point_stratified_index = stratified_indices[cur_point_index]; // should NOT be -1!
+spatial_index_occupied_by[cur_point_index] = spatial_index_occupied_by[cur_point_index]-1;
+if cur_point_stratified_index == -1: <point needs to be moved>
+array_of_possible_indices
+array_of_spatial_distances
+array_of_stratified_distances
+for i in valid_indices:
+	cur_index = valid_indices[i];
+	if spatial_index_occupied_by[cur_index] > 0:
+		spatial_distance = <use index to compute distance to current point>
+		cur_stratified_index = stratified_indices[cur_index]; // should NOT be -1!
+		< use cur_stratified_index and stratified_occupied to compute closest stratified distance >
+		add to:
+			array_of_possible_indices
+			array_of_spatial_distances
+			array_of_stratified_distances
+sort arrays to gain distribution permutations relative to the current possible indices
+	<creates a combined distribution relative to the array_of_possible_indices>
+sample from the top 5 positions in the combined distribution
+	<obtains a best_index_spatial_space variable>
+points_selected[i] = best_index_spatial_space
+
+Notes:
+	Both methods can be combined
+	I can organize the data into arrays
+	Stratified indices can be computed on the first iteration before any other operations

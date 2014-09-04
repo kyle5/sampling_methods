@@ -1,0 +1,38 @@
+
+                       Farthest-Point Optimization
+                              Example Code
+
+This example code implements the optimization method proposed in the paper
+  T. Schlömer, D. Heck, O. Deussen:
+  Farthest-Point Optimized Point Sets with Maximized Minimum Distance
+  HPG '11: High Performance Graphics Proceedings
+ 
+Requirements:
+  CGAL 3.7 or higher (www.cgal.org)
+
+Usage:
+  The included Makefile creates a single executable 'fpo' provided CGAL is
+  already installed. Adjust the INC and LIB variables in the Makefile to set
+  the required header and library search paths if necessary.
+
+  By default, the program optimizes a random set of 1024 points until a
+  relative minimum distance of 0.925 is achieved. The resulting point
+  distribution is written to an EPS file.
+  
+  Run
+    ./fpo --help
+  to obtain an overview of available command line options.
+
+
+                       License and Acknowledgements
+
+fpo is free software and published under the GNU GPL. For further information
+see the file COPYING.
+
+Copyright (C) 2011, Daniel Heck (daniel.heck@uni-konstanz.de), Thomas
+Schl\"{o}mer (thomas.schloemer@uni-konstanz.de)
+
+
+                              Version History
+v0.1
+- Initial release

@@ -1,0 +1,11 @@
+function [ offset ] = computeStaOffset( offset_possible, last_group )
+    
+    offset = round( rand(1) * offset_possible );
+    cur_starting_section =  offset;
+    cur_ending_section = cur_ending_section + offset;
+
+    if last_group
+        
+    end
+end
+
