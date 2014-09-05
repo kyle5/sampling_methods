@@ -1,10 +1,4 @@
 # this will be a build script to make the new sampling object code
-top_level_dir_relative="$(dirname $0)"
-farthest_point="$(realpath ${top_level_dir_relative})/"
-echo "farthest point is : ${farthest_point}"
-
-cd ${farthest_point}
-
 mkdir -p build
 cd build
 

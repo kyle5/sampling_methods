@@ -1,4 +1,3 @@
-#include "get_random_points_new_object_model.h"
 #include "get_rp_helper_functions.h"
 
 using namespace std;
@@ -369,3 +368,4 @@ template <class T> vector< pair< T, int > > sort_and_return_indices_specified_fu
 	sort( input_array_of_elements_with_indices.begin(), input_array_of_elements_with_indices.end(), pt2Func );
 	return input_array_of_elements_with_indices;
 }
+template vector< pair< Circle_2_new, int > > sort_and_return_indices_specified_function<Circle_2_new>( vector< Circle_2_new > input_array_of_elements, bool (*pt2Func)( pair<Circle_2_new, int>, pair<Circle_2_new, int>) );
