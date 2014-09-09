@@ -59,16 +59,12 @@ cd build
 
 opencv_dir="/opt/ros/fuerte/"
 
-g++ -fPIC --shared -I. -I/opt/ros/fuerte/include/ -o libcompute_algorithm_error.so ../computeAlgorithmEstimateErrorValues.cpp ../setup_section_indices.cpp ../setup_counts_from_sections.cpp ../compute_error_helpers.cpp ../get_averages.cpp
-
-mex_args="-I${opencv_dir}/include/ -L${opencv_dir}/lib/ -lopencv_core -lopencv_features2d -lopencv_imgproc -lopencv_highgui -lopencv_nonfree -lopencv_ml -L. -lcompute_algorithm_error -I."
+#g++ -fPIC --shared -I. -I/opt/ros/fuerte/include/ -o libcompute_algorithm_error.so ../computeAlgorithmEstimateErrorValues.cpp ../setup_section_indices.cpp ../setup_counts_from_sections.cpp ../compute_error_helpers.cpp ../get_averages.cpp
 
 include_args="-I${opencv_dir}/include/ -I. -I${path_combined_original_root} -I${path_combined_new_root} -I${path_original_farthest_point_dir}"
 opencv_link_args="-L${opencv_dir}/lib/ -lopencv_core -lopencv_features2d -lopencv_imgproc -lopencv_highgui -lopencv_nonfree -lopencv_ml"
 farthest_point_link_args="-L${top_level_dir}/farthest_point_optimization/build/ -lget_points -L${top_level_dir}/farthest_point_stratified_yield_and_spatial/build/ -lget_points_stratified_and_spatial -L${path_combined_new_root}/build/ -lget_points_combined_approach"
 cgal_link_args="-L /usr/local/lib/CGAL/ -l CGAL -l CGAL_Core"
-
-mex ${mex_args} LDFLAGS='$LDFLAGS'" -Wl,-rpath=${opencv_dir}/lib" ../mexErrorValuesComputation.cpp ../convertMatlabMatToOpenCVMat.cpp ${opencv_link_args} ${farthest_point_link_args} ${cgal_link_args}
 
 mex ${include_args} LDFLAGS='$LDFLAGS'" -Wl,-rpath=${opencv_dir}/lib"   ../mex_get_optimal_sampling_locations_one_sample.cpp ../mex_conversion_matlab_and_cpp.cpp ../convertOpenCVMatToMatlabMat.cpp ../convertMatlabMatToOpenCVMat.cpp ${opencv_link_args} ${farthest_point_link_args} ${cgal_link_args}
 

@@ -35,7 +35,6 @@ function [ all_computer_mean_errors, std_dev_computer_errors ] = ...
   total_hand_count_valid = sum(ground_counts(valid_counts(:)));
   total_algorithm_count_valid = sum(algorithm_counts(valid_counts(:)));
   average_scaling_factor = total_algorithm_count_valid / total_hand_count_valid;
-  graphing_data_directory = parameters.graphing_data_directory;
   loop_iterations = parameters.loop_iterations;
   sampling_hand_counted_numbers_list = parameters.sampling_hand_counted_numbers_list_input;
   sampling_algorithm_counted_numbers_list = parameters.sampling_algorithm_counted_numbers_list_input;

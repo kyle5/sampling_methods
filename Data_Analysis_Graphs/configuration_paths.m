@@ -1,5 +1,10 @@
 % This is the configuration file
+directory_of_dropbox_sampling_data = '/home/kyle/Dropbox/PastWorkProjects/2014_09_sampling_methods_data/';
 robocrop_source = '/home/kyle/grape_code_git_primary/robocrop/';
+
+% Number of times that random samples are taken from the orchard sections
+% before averaging
+loop_iterations = 1000;
 
 mapping_parameters.grid_step = 0.00002; % ! Hardcoded
 mapping_parameters.measurement_smoothing_radius = 0.00002; % ! Hardcoded
@@ -68,10 +73,6 @@ sampling_strategy_operations(9) = 1;      sampling_strategy_operations(10) = 1; 
 sampling_strategy_operations(12) = 1;    sampling_strategy_operations(13) = 1;       sampling_strategy_operations(14) = 1;
 %  extrapolate: hand only: simulated    % simulated: y-intercept: hand+image    % simulated: scaled counts: hand+image   
 sampling_strategy_operations(15) = 1;   sampling_strategy_operations(16) = 1;   sampling_strategy_operations(17) = 1;
-
-% Number of times that random samples are taken from the orchard sections
-% before averaging
-loop_iterations = 100;
 
 % The increment of sampling by the computer algorithm
 increment = 5;

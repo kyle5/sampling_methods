@@ -12,7 +12,7 @@ function [ all_optimal_sampling_indices_spatial, all_optimal_sampling_indices_sp
   
 %   error_decrease_requested_list should be a percentage of
 %   previous_error_values value
-  
+
   for i = 1:numel( sampling_numbers_list )
     cur_sampling_number = sampling_numbers_list(i);
     
@@ -28,10 +28,12 @@ function [ all_optimal_sampling_indices_spatial, all_optimal_sampling_indices_sp
         stratified_and_spatial = 0;
         weight_spatial = 1;
         rand_seed = ceil(rand(1)*1000);
+        ps_final_point_indices = {};
         [ ps_final_point_indices ] = mex_get_optimal_indices_globally( algorithm_counts, cur_sampling_number, stratified_and_spatial, weight_spatial, ground_counts, rand_seed, valid_counts );
 %         ps_final_point_indices = [];
 %         while isempty( ps_final_point_indices )
 %           try
+%             rand_seed = ceil(rand(1)*1000);
 %             [ ps_final_point_indices ] = mex_get_optimal_sampling_locations_one_sample( algorithm_counts, cur_sampling_number, stratified_and_spatial, weight_spatial, ground_counts, rand_seed, valid_counts );
 %           catch
 %             disp('CGAL Error');
@@ -75,6 +77,7 @@ function [ all_optimal_sampling_indices_spatial, all_optimal_sampling_indices_sp
       [all_optimal_sampling_indices_spatial_and_stratified{ i, :}] = deal(final_point_indices);
       finished = sections_required;
     end
+    
     while finished < sections_required && compute_spatial_and_stratified == 1
       iterations_taken = iterations_taken + 1;
       if mod(iterations_taken, 10) == 0
@@ -108,5 +111,4 @@ function [ all_optimal_sampling_indices_spatial, all_optimal_sampling_indices_sp
       pause(1);
     end
   end
-  
 end

@@ -9,25 +9,23 @@ addpath( fullfile( directory_of_graphing, 'cpp/build/' ) );
 
 % This directory contains the .mat files containing the matrices of apples that 
 % were counted by hand and by the computer algorithm
-directory_for_green_apple_count_matrices = [directory_of_all_data_analysis, '/data/preprocessed_measurement_data/2011_granny_smith/'];
-directory_for_red_apple_count_matrices = [directory_of_all_data_analysis, '/data/preprocessed_measurement_data/2011_red_thinned/'];
+directory_for_green_apple_count_matrices = [directory_of_dropbox_sampling_data, '/preprocessed_measurement_data/2011_granny_smith/'];
+directory_for_red_apple_count_matrices = [directory_of_dropbox_sampling_data, '/preprocessed_measurement_data/2011_red_thinned/'];
 
 addpath( directory_of_helper_functions );
 addpath( directory_for_green_apple_count_matrices );
 addpath( directory_for_red_apple_count_matrices );
 
 graphing_scripts_and_functions = [directory_of_graphing, 'scriptsAndFunctions/'];
-graphing_data_directory = [directory_of_graphing, 'data/'];
 graphing_results = [directory_of_graphing, 'results/'];
 addpath( graphing_scripts_and_functions );
-addpath( graphing_data_directory );
 
 %% Loading Apple Count Variables
 % Hand count and computer count matrices that are loaded
 % need to be setup so that size() = [number of sections per row, number of rows]
 % with section 1, row 1 located at index (1, 1)
-load([directory_for_red_apple_count_matrices, 'greenAppleVariables.mat']);
-load([directory_for_green_apple_count_matrices, 'redAppleVariables.mat']);
+load([directory_for_green_apple_count_matrices, 'greenAppleVariables.mat']);
+load([directory_for_red_apple_count_matrices, 'redAppleVariables.mat']);
 
 addpath( [robocrop_source, '/matlab/src/'] );
 addpath( [robocrop_source, '/matlab/src/mapping/'] );
@@ -131,7 +129,6 @@ parameters.plot_standard_deviation_input = plot_standard_deviation;
 parameters.hand_counts_are_dependent_variable = hand_counts_are_dependent_variable;
 parameters.num_sampling_strategies = num_sampling_strategies;
 parameters.sampling_strategy_operations = sampling_strategy_operations;
-parameters.graphing_data_directory = graphing_data_directory;
 parameters.num_sampling_strategies = num_sampling_strategies;
 parameters.names_of_error_calcs = names_of_error_calcs;
 for i = 1:size( boolean_analyze_dataset, 1 )
@@ -231,4 +228,5 @@ for i = 1:size( boolean_analyze_dataset, 1 )
   plotComputerErrorComparison( cur_all_computer_mean_errors, cur_std_dev_computer_errors, cur_dataset_id, { comp_error_direct_extrapolation_discontinuous, comp_error_y_intercept_sections_spatial_discontinuous },  'Spatial: Regression (Hand + Image)', parameters, path_individual_results_simulated{i}, i <= 2 && false );
   plotComputerErrorComparison( cur_all_computer_mean_errors, cur_std_dev_computer_errors, cur_dataset_id, { comp_error_direct_extrapolation_discontinuous, comp_error_y_intercept_simulated },  'Simulated: Regression (Hand + Image)', parameters, path_individual_results_simulated{i}, i <= 2 && false );
   plotComputerErrorComparison( cur_all_computer_mean_errors, cur_std_dev_computer_errors, cur_dataset_id, { comp_error_direct_extrapolation_discontinuous, comp_error_scaled_simulated },  'Simulated: Scaling Factor: (Hand + Image)', parameters, path_individual_results_simulated{i}, i <= 2 && false );
+  
 end
